@@ -45,12 +45,16 @@ def get_related_words(keywords, topn=200):
     model = KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin', 
                                           limit=50000, binary=True)
     related_words = []
+    nonsence = []
     for key in keywords:
+        if key not in model.vocab.keys():
+            nonsence += [key]
+            continue
         related_words += model.similar_by_word(key, topn=topn)
         related_words += [(key, 1.)]
 
     related_words = dict(related_words)
-    return related_words
+    return related_words, nonsence
 
 def get_score(sentences, related_words):
     """Get scores for sentences"""
@@ -65,7 +69,7 @@ def get_score(sentences, related_words):
     scores = np.array(scores)
     return scores
 
-def get_important_sentences(file, keywords, show, topn_word=200, num_sentence=5):
+def get_important_sentences(file, keywords, show, topn_word=200, show_all=False):
     """
     Extract important sentences from file
     
@@ -74,16 +78,22 @@ def get_important_sentences(file, keywords, show, topn_word=200, num_sentence=5)
     """
     
     sentences = load_data(file)
-    related_words = get_related_words(keywords, topn=topn_word)
+    related_words, nonsence = get_related_words(keywords, topn=topn_word)
     scores = get_score(sentences, related_words)
     most_related_sentences_id = np.argsort(scores)[::-1]
 
+    num_sentence = 5
+    if not show_all:
+        num_sentence = len(scores[scores > 0])
+    
     related_sentences = []
     for i in range(len(sentences)):
-        if i in most_related_sentences_id[:5]:
+        if i in most_related_sentences_id[:num_sentence]:
             related_sentences += [sentences[i]]
             
     sentences_show = ""
+    if nonsence:
+        sentences_show += "There is no sentences related to {} <br>".format(", ".join(nonsence))
     if show == "Highlight text":
         texts = load_file(file)
         for t in texts:
