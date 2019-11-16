@@ -12,6 +12,7 @@ import glob
 import streamlit as st
 import numpy as np
 import pandas as pd
+import py
 from gensim.models import KeyedVectors
 
 OUTPUT_FORMAT = ['Sentences', 'Highlight text']
@@ -83,7 +84,7 @@ def get_important_sentences(file, keywords, show, topn_word=200, show_all=False)
     most_related_sentences_id = np.argsort(scores)[::-1]
 
     num_sentence = 5
-    if not show_all:
+    if show_all:
         num_sentence = len(scores[scores > 0])
     
     related_sentences = []
@@ -93,7 +94,7 @@ def get_important_sentences(file, keywords, show, topn_word=200, show_all=False)
             
     sentences_show = ""
     if nonsence:
-        sentences_show += "There is no sentences related to {} <br>".format(", ".join(nonsence))
+        sentences_show += "_There is no sentences related to {}_ <br><br>".format(", ".join(nonsence))
     if show == "Highlight text":
         texts = load_file(file)
         for t in texts:
@@ -109,35 +110,44 @@ def get_important_sentences(file, keywords, show, topn_word=200, show_all=False)
     sentences_show.replace("$", "\\$")
     return sentences_show
 
-def textAnalyzer(filename, outputFormat, career, keywords):
+def textAnalyzer(filename, outputFormat, keywords, showAll):
     
-    text = get_important_sentences(filename, keywords, show = outputFormat)
+    text = get_important_sentences(filename, keywords, show = outputFormat, show_all = showAll)
     return text
 
+def saveAs(text):
+    if outFormat == 'Sentences':
+        text_file = open("Related_Info.txt", "w")
+    else:
+        text_file = open("Highted_text.txt", "w")
+    text_file.write(text)
+    text_file.close()
+        
 # In[1]
 ## input paras
 st.title('LauzHack 2019, AXA')
 
-filename = file_selector()
-st.write('The file is loaded `%s`' % filename)
+filename  = file_selector()
 
 outFormat = st.sidebar.selectbox('Select an output format:', OUTPUT_FORMAT)
-
-career = st.sidebar.multiselect( 'Career', CAREER_TUPLE)
-st.write('You career', career)
 
 keywordList = st.sidebar.text_input('Keywords', ' ')
 keywordList = re.findall(r"[\w']+", keywordList)
 
 showAll = st.sidebar.checkbox( 'Show all', ('Show all results'))
 
+saveFile = st.sidebar.button('Save')
+
 # In[1]
 ## processing
-text = textAnalyzer(filename, outFormat, career, keywordList)
+text = textAnalyzer(filename, outFormat, keywordList, showAll)
 
 # In[2]
-## ouotput 
+## output 
 st.header('Related information')
 st.markdown(text.replace('<br>', '\n'))
 
-
+if saveFile:
+    saveAs(text.replace('<br>', '\n'))
+    
+    
