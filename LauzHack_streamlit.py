@@ -34,7 +34,7 @@ WORDTOVEC_MODEL = KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative
 
 def file_selector(folder_path='.'):
     filenames = glob.glob( os.path.join(folder_path, '*.txt') ) + glob.glob( os.path.join(folder_path, '*.pdf'))
-    selected_filename = st.sidebar.selectbox('1. Select a file to analyse:', filenames)
+    selected_filename = st.sidebar.selectbox('Step 1. Select a file to analyse:', filenames)
     return selected_filename
 
 def load_file(file, show_origin: bool = False):
@@ -142,6 +142,9 @@ def get_important_sentences(file, keywords, show, topn_word=200, show_all=False,
     """
     
     sentences = load_data(file)
+    if len(sentences) == 0:
+        return "Invalid file."
+    
     topics = find_topic_words(file)
     if keywords == []:
         keywords = topics[:2]
@@ -214,17 +217,17 @@ def saveAs(text):
         
 # In[1]
 ## input paras
-st.title('LauzHack 2019, AXA')
+st.title('TL;DR')
 
 filename  = file_selector()
 
-keywordList = st.sidebar.text_input('2. Keywords (Optional)', ' ')
+keywordList = st.sidebar.text_input('Step 2. Keywords (Optional)', ' ')
 keywordList = re.findall(r"[\w']+", keywordList)
 
 st.sidebar.header('Original Text')
 st.sidebar.markdown(load_file(filename, show_origin=True))
 
-outFormat = st.selectbox('3. How to show the information:', OUTPUT_FORMAT)
+outFormat = st.selectbox('Step 3. How to show the information:', OUTPUT_FORMAT)
 
 showAll   = st.checkbox( 'Show all', ('Show all results'))
 showRecommendLink   = st.checkbox( 'Show recommendation', ('Show recommendation'))
