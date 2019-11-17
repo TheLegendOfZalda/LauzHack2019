@@ -9,21 +9,21 @@ Created on Sat Nov 16 15:29:57 2019
 import os
 import re
 import glob
+import nltk
 import warnings
 import streamlit as st
 import numpy as np
-import pandas as pd
 import PyPDF2
+import gensim
 from gensim.models import KeyedVectors
-from nltk.stem import PorterStemmer 
 from nltk.tokenize import word_tokenize
 from gensim import corpora
-import re
 from itertools import combinations
 
 OUTPUT_FORMAT = ['Sentences', 'Highlight text']
 CAREER_TUPLE  = ('Employee', 'Employer', 'Student', 'Manager', 'Professor')
 KEYWORD_TUPLE = np.array(['Salary', 'Privacy policy', 'Signal processing', 'Deep learning'])
+WORDTOVEC_MODEL = ''
 
 # In[0]
 ## functions definitions
@@ -68,15 +68,16 @@ def load_data(file):
 
 def get_related_words(keywords, topn=200):
     """Given a list of keywords, return dictionary of words and its weight"""
-    model = KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin', 
+    global WORDTOVEC_MODEL 
+    WORDTOVEC_MODEL = KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin', 
                                           limit=50000, binary=True)
     related_words = []
     nonsence = []
     for key in keywords:
-        if key not in model.vocab.keys():
+        if key not in WORDTOVEC_MODEL.vocab.keys():
             nonsence += [key]
             continue
-        related_words += model.similar_by_word(key, topn=topn)
+        related_words += WORDTOVEC_MODEL.similar_by_word(key, topn=topn)
         related_words += [(key, 1.)]
 
     related_words = dict(related_words)
@@ -137,7 +138,7 @@ def get_important_sentences(file, keywords, show, topn_word=200, show_all=False)
 
 def find_topic_words(file, num_topics = 1, num_words = 10):
     """ Extract the unique topic words based on LDA model"""
-    ps = PorterStemmer()
+    global WORDTOVEC_MODEL
     en_stop = set(nltk.corpus.stopwords.words('english'))
     
     sentences = load_data(file)
@@ -152,9 +153,8 @@ def find_topic_words(file, num_topics = 1, num_words = 10):
     dictionary = corpora.Dictionary(text_data)
     corpus = [dictionary.doc2bow(text) for text in text_data]
     
-    num_topics = 10
     ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics = num_topics, id2word=dictionary, passes=15)
-    topics = ldamodel.print_topics(num_words=1)
+    topics = ldamodel.print_topics(num_words)
     
     topic_words = []
     for i, k in topics:
@@ -165,7 +165,7 @@ def find_topic_words(file, num_topics = 1, num_words = 10):
     
     unique_word = topic_words.tolist()
     for i, j in combinations(topic_words, 2):
-        sim = model.similarity(i, j)
+        sim = WORDTOVEC_MODEL.similarity(i, j)
         if sim > 0.5:
             unique_word.remove(i)
             
