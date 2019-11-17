@@ -19,6 +19,9 @@ from gensim.models import KeyedVectors
 from nltk.tokenize import word_tokenize
 from gensim import corpora
 from itertools import combinations
+from googlesearch import search 
+from mechanize import Browser
+  
 
 OUTPUT_FORMAT = ['Sentences', 'Highlight text']
 CAREER_TUPLE  = ('Employee', 'Employer', 'Student', 'Manager', 'Professor')
@@ -96,45 +99,6 @@ def get_score(sentences, related_words):
     scores = np.array(scores)
     return scores
 
-def get_important_sentences(file, keywords, show, topn_word=200, show_all=False):
-    """
-    Extract important sentences from file
-    
-    show: Highlight text: show original text with highlight
-          Sentences: show only the sentences
-    """
-    
-    sentences = load_data(file)
-    related_words, nonsence = get_related_words(keywords, topn=topn_word)
-    scores = get_score(sentences, related_words)
-    most_related_sentences_id = np.argsort(scores)[::-1]
-
-    num_sentence = 5
-    if show_all:
-        num_sentence = len(scores[scores > 0])
-    
-    related_sentences = []
-    for i in range(len(sentences)):
-        if i in most_related_sentences_id[:num_sentence]:
-            related_sentences += [sentences[i]]
-            
-    sentences_show = ""
-    if nonsence:
-        sentences_show += "_There is no sentences related to {}_ <br><br>".format(", ".join(nonsence))
-    if show == "Highlight text":
-        texts = load_file(file)
-        for t in texts:
-            for s in related_sentences:
-                t = t.replace(s, "**"+s+"**")
-            sentences_show += t + "<br>"    
-    elif show == "Sentences":
-        for i,s in enumerate(related_sentences):
-            sentences_show += "<br>" + str(i+1) + ". " + s
-    else:
-        return "invalid value for show"
-    
-    sentences_show.replace("$", "\\$")
-    return sentences_show
 
 def find_topic_words(file, num_topics = 1, num_words = 10):
     """ Extract the unique topic words based on LDA model"""
@@ -170,6 +134,63 @@ def find_topic_words(file, num_topics = 1, num_words = 10):
             unique_word.remove(i)
             
     return unique_word
+
+
+def get_important_sentences(file, keywords, show, topn_word=200, show_all=False):
+    """
+    Extract important sentences from file
+    
+    show: Highlight text: show original text with highlight
+          Sentences: show only the sentences
+    """
+    
+    sentences = load_data(file)
+    topics = find_topic_words(file)
+    if keywords == []:
+        keywords = topics[:2]
+        
+    related_words, nonsence = get_related_words(keywords, topn=topn_word)
+    scores = get_score(sentences, related_words)
+    most_related_sentences_id = np.argsort(scores)[::-1]
+    
+
+    num_sentence = 5
+    if show_all:
+        num_sentence = len(scores[scores > 0])
+    
+    related_sentences = []
+    for i in range(len(sentences)):
+        if i in most_related_sentences_id[:num_sentence]:
+            related_sentences += [sentences[i]]
+            
+    query = topics[:3] 
+    site = None
+    for j in search(query, num=1, stop=1, pause=2): 
+        site = j
+    br = Browser()
+    br.open(site)
+    title = br.title()
+
+    sentences_show = ""
+    if nonsence:
+        sentences_show += "_There is no sentences related to {}_ <br><br>".format(", ".join(nonsence))
+        
+    sentences_show += "You might be interested in [{}]({}) <br>".format(title, site)
+    if show == "Highlight text":
+        texts = load_file(file)
+        for t in texts:
+            for s in related_sentences:
+                t = t.replace(s, "**"+s+"**")
+            sentences_show += t + "<br>"    
+    elif show == "Sentences":
+        for i,s in enumerate(related_sentences):
+            sentences_show += "<br>" + str(i+1) + ". " + s
+    else:
+        return "invalid value for show"
+    
+    sentences_show.replace("$", "\\$")
+    return sentences_show
+
 
 def textAnalyzer(filename, outputFormat, keywords, showAll):
     
