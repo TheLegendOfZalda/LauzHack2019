@@ -14,6 +14,11 @@ import numpy as np
 import pandas as pd
 import py
 from gensim.models import KeyedVectors
+from nltk.stem import PorterStemmer 
+from nltk.tokenize import word_tokenize
+from gensim import corpora
+import re
+from itertools import combinations
 
 OUTPUT_FORMAT = ['Sentences', 'Highlight text']
 CAREER_TUPLE  = ('Employee', 'Employer', 'Student', 'Manager', 'Professor')
@@ -109,6 +114,42 @@ def get_important_sentences(file, keywords, show, topn_word=200, show_all=False)
     
     sentences_show.replace("$", "\\$")
     return sentences_show
+
+def find_topic_words(file, num_topics = 1, num_words = 10):
+    """ Extract the unique topic words based on LDA model"""
+    ps = PorterStemmer()
+    en_stop = set(nltk.corpus.stopwords.words('english'))
+    
+    sentences = load_data(file)
+    text_data = []
+    for i in sentences:
+        tokens = word_tokenize(i)
+        tokens = [token for token in tokens if len(token) > 4]
+        tokens = [token for token in tokens if token not in en_stop]
+
+        text_data.append(tokens)
+    
+    dictionary = corpora.Dictionary(text_data)
+    corpus = [dictionary.doc2bow(text) for text in text_data]
+    
+    num_topics = 10
+    ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics = num_topics, id2word=dictionary, passes=15)
+    topics = ldamodel.print_topics(num_words=1)
+    
+    topic_words = []
+    for i, k in topics:
+        pattern = re.compile('"(.*)"')
+        topic_words.append(pattern.findall(k)[0])
+    
+    topic_words = np.unique(topic_words)
+    
+    unique_word = topic_words.tolist()
+    for i, j in combinations(topic_words, 2):
+        sim = model.similarity(i, j)
+        if sim > 0.5:
+            unique_word.remove(i)
+            
+    return unique_word
 
 def textAnalyzer(filename, outputFormat, keywords, showAll):
     
