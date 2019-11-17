@@ -1,0 +1,54 @@
+"China is betting on AI and investing in AI and deploying AI on a scale no other country is doing," says Abishur Prakash, a futurist and author of books about the effect of artificial intelligence (AI) on geopolitics.
+
+As developments in AI accelerate, some in the US fear that the ability of China's powerful central government to marshal data and pour resources into the field will push it ahead.
+
+The country has announced billions in funding for start-ups, launched programmes to woo researchers from overseas and streamlined its data policies.
+
+It has announced news-reading robots and AI-powered strategy for foreign relations. Perhaps most alarming to the US are its efforts to incorporate it into its military.
+
+In the last few years, Washington has toughened oversight of Chinese investments, banned US firms from doing business with certain Chinese companies and increased criminal prosecution of alleged technology theft.
+
+"What the Trump administration is doing is a sign... the US knows that its geopolitical power will be redefined and reconfigured by this era," said Mr Prakash, who works at the Toronto-based Center for Innovating the Future.
+
+These developments come amid political tension between the two nations. Yet, some analysts worry the US response is counterproductive, arguing that cutting off access to US microchips, for example, could simply accelerate Chinese efforts to develop their own alternatives.
+
+
+The Trump administration has imposed tariffs on billions of dollars worth of Chinese goods - retaliation for "unfair" practices it says are aimed at giving China an advantage in the field.
+
+The White House has also pressed universities to review their relationships with Chinese partners and threatened to restrict student visas. It is even said to be looking at rules against certain US investments in China - once nearly unthinkable in free-market America.
+
+The actions are aimed at preserving US leadership in technologies expected to determine economic and military power for generations to come.
+
+"That China will grow to be an economy as large as ours may be inevitable; that we aid their mercantilist strategy through free trade and open investment in our technology sector is a choice," US Department of Defense officials wrote in a widely cited 2018 report.
+
+
+China advances
+As the US and China race to capitalise on advances in machine learning, facial recognition and other forms of artificial intelligence, Tom Mitchell has a front row seat.
+
+The professor of computer science founded the world's first research centre for artificial intelligence at Carnegie Mellon in the US. Since 2018, he has also served as chief scientist at Squirrel, a leading tutoring company in China.
+
+He says the US has more experience building tech companies, but China may have the advantage when it comes to AI applications relying on big data sets - and points to the medical field as an example.
+
+"In the US we've had electronic medical records for over 20 years but we still have not put together all the records in the country to run machine-learning algorithms on those."
+
+He says the US has been inhibited by privacy concerns, as well as a fractured, for-profit industry.
+
+"In China, it's a different situation. If the government decides that it's going to have country-wide electronic medical records... then it's going to happen."
+
+Prof Mitchell, who is working on using AI to improve education, says working in both the US and China puts him in the best position to invent and apply cutting-edge technology.
+
+But that kind of cross-border collaboration is facing increasing scrutiny, given rising political tensions.
+
+
+
+Scaling back
+Last year, Chinese investment in the US dropped to $4.8bn (£3.7bn) - its lowest level since 2011 - while US investment in China dipped from $14bn to $13bn, according to the Rhodium Group's annual report.
+
+High-profile Chinese firms, like insurance giant Anbang and Kai-Fu Lee's Sinovation Ventures, have reportedly sold or scaled back US operations, while China's Huawei and ZTE have suffered serious losses after being subject to US bans.
+
+In US academic circles, universities are rethinking their ties to China, while US firms doing business in China have also grown more cautious.
+
+Mr Prakash, who works with start-ups, tech firms and governments on questions of artificial intelligence, says while many western firms continue to pursue opportunities in China, current tensions have changed the discussions.
+
+"Geopolitics is now front and centre for all of them," he says. "They're forced to say, hey, we're based in Silicon Valley, we're selling to part of Asia and now as this tech war unfolds we need to understand what's possible, what can we do, what are our options."
+
