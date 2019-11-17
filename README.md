@@ -35,6 +35,4 @@ These are test files:
 - pdf-test.pdf
 
 
-_This is a challenge for Lauzhack 2019 given by AXA_
-
-[challenge link](https://devpost.com/software/prepare-your-exam-in-2-minutes#updates)
+_This is a challenge for Lauzhack 2019 given by AXA_ [challenge link](https://devpost.com/software/prepare-your-exam-in-2-minutes)
