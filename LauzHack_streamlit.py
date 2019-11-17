@@ -9,10 +9,11 @@ Created on Sat Nov 16 15:29:57 2019
 import os
 import re
 import glob
+import warnings
 import streamlit as st
 import numpy as np
 import pandas as pd
-import py
+import PyPDF2
 from gensim.models import KeyedVectors
 
 OUTPUT_FORMAT = ['Sentences', 'Highlight text']
@@ -23,14 +24,33 @@ KEYWORD_TUPLE = np.array(['Salary', 'Privacy policy', 'Signal processing', 'Deep
 ## functions definitions
 
 def file_selector(folder_path='.'):
-    filenames = glob.glob( os.path.join(folder_path, '*.txt' ) )
+    filenames = glob.glob( os.path.join(folder_path, '*.txt') ) + glob.glob( os.path.join(folder_path, '*.pdf'))
     selected_filename = st.sidebar.selectbox('Select a file to analyse:', filenames)
     return selected_filename
 
-def load_file(file):
-    """Given a file path, load textual file"""
-    with open(file, "r") as f:
-        text = [line.strip() for line in f.readlines()]
+def load_file(file, show_origin: bool = False):
+    """Given a file path, load the file (pdf, txt supported)"""
+    text = ''
+    if file is not None:
+        if(file.endswith('.txt')):
+            if not show_origin:
+                with open(file, "r") as f:
+                    text = [line.strip() for line in f.readlines()]
+            else:
+                with open(file, 'r') as content_file:
+                    text = content_file.read()     
+        elif(file.endswith('.pdf')):
+            pdfFileObj = open(file, 'rb')
+            pdfReader  = PyPDF2.PdfFileReader(pdfFileObj)
+            for NumIter in range(pdfReader.numPages):
+                pageObj = pdfReader.getPage(NumIter)
+                text += pageObj.extractText()
+            if not show_origin:
+                text = [text]
+        else:
+            warnings.warn('Format not supported.')
+    else:
+         warnings.warn('No file found.')
     return text   
     
 def load_data(file):
@@ -138,6 +158,8 @@ showAll = st.sidebar.checkbox( 'Show all', ('Show all results'))
 
 saveFile = st.sidebar.button('Save')
 
+st.sidebar.markdown(load_file(filename, show_origin=True))
+
 # In[1]
 ## processing
 text = textAnalyzer(filename, outFormat, keywordList, showAll)
@@ -148,6 +170,12 @@ st.header('Related information')
 st.markdown(text.replace('<br>', '\n'))
 
 if saveFile:
-    saveAs(text.replace('<br>', '\n'))
+    if len(text) > 0:
+        saveAs(text.replace('<br>', '\n'))
+        st.write('File has been saved.')
+    else:
+        st.write('No text to save.')
+        
+
     
     
