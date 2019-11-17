@@ -23,17 +23,18 @@ from googlesearch import search
 from mechanize import Browser
   
 
-OUTPUT_FORMAT = ['Sentences', 'Highlight text']
+OUTPUT_FORMAT = ['Highlight text', 'Sentences']
 CAREER_TUPLE  = ('Employee', 'Employer', 'Student', 'Manager', 'Professor')
 KEYWORD_TUPLE = np.array(['Salary', 'Privacy policy', 'Signal processing', 'Deep learning'])
-WORDTOVEC_MODEL = ''
+WORDTOVEC_MODEL = KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin', 
+                  limit=50000, binary=True)
 
 # In[0]
 ## functions definitions
 
 def file_selector(folder_path='.'):
     filenames = glob.glob( os.path.join(folder_path, '*.txt') ) + glob.glob( os.path.join(folder_path, '*.pdf'))
-    selected_filename = st.sidebar.selectbox('Select a file to analyse:', filenames)
+    selected_filename = st.sidebar.selectbox('1. Select a file to analyse:', filenames)
     return selected_filename
 
 def load_file(file, show_origin: bool = False):
@@ -70,10 +71,7 @@ def load_data(file):
     return sentences
 
 def get_related_words(keywords, topn=200):
-    """Given a list of keywords, return dictionary of words and its weight"""
-    global WORDTOVEC_MODEL 
-    WORDTOVEC_MODEL = KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin', 
-                                          limit=50000, binary=True)
+    """Given a list of keywords, return dictionary of words and its weight""" 
     related_words = []
     nonsence = []
     for key in keywords:
@@ -102,7 +100,6 @@ def get_score(sentences, related_words):
 
 def find_topic_words(file, num_topics = 1, num_words = 10):
     """ Extract the unique topic words based on LDA model"""
-    global WORDTOVEC_MODEL
     en_stop = set(nltk.corpus.stopwords.words('english'))
     
     sentences = load_data(file)
@@ -119,24 +116,24 @@ def find_topic_words(file, num_topics = 1, num_words = 10):
     
     ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics = num_topics, id2word=dictionary, passes=15)
     topics = ldamodel.print_topics(num_words)
-    
-    topic_words = []
-    for i, k in topics:
-        pattern = re.compile('"(.*)"')
-        topic_words.append(pattern.findall(k)[0])
-    
-    topic_words = np.unique(topic_words)
+   
+    pattern = re.compile(r'"(.*?)"')
+    topic_words = np.unique(pattern.findall(topics[0][1]))
     
     unique_word = topic_words.tolist()
     for i, j in combinations(topic_words, 2):
-        sim = WORDTOVEC_MODEL.similarity(i, j)
+        try:
+            sim = WORDTOVEC_MODEL.similarity(i, j)
+        except:
+            continue
+        
         if sim > 0.5:
             unique_word.remove(i)
             
     return unique_word
 
 
-def get_important_sentences(file, keywords, show, topn_word=200, show_all=False):
+def get_important_sentences(file, keywords, show, topn_word=200, show_all=False, recommendLink = False):
     """
     Extract important sentences from file
     
@@ -154,28 +151,33 @@ def get_important_sentences(file, keywords, show, topn_word=200, show_all=False)
     most_related_sentences_id = np.argsort(scores)[::-1]
     
 
-    num_sentence = 5
-    if show_all:
-        num_sentence = len(scores[scores > 0])
+    num_sentence = 0
+    num_related = len(scores[scores > 0])
+    num_sentence = num_related
+    
+    if not show_all:
+        num_sentence = min(5, num_sentence)
     
     related_sentences = []
     for i in range(len(sentences)):
         if i in most_related_sentences_id[:num_sentence]:
             related_sentences += [sentences[i]]
             
-    query = topics[:3] 
-    site = None
-    for j in search(query, num=1, stop=1, pause=2): 
-        site = j
-    br = Browser()
-    br.open(site)
-    title = br.title()
-
+            
     sentences_show = ""
     if nonsence:
         sentences_show += "_There is no sentences related to {}_ <br><br>".format(", ".join(nonsence))
-        
-    sentences_show += "You might be interested in [{}]({}) <br>".format(title, site)
+    
+    if recommendLink:     
+        query = " ".join(topics[:3] )
+        site = None
+        for j in search(query, num=1, stop=1, pause=2): 
+            site = j
+        br = Browser()
+        br.open(site)
+        title = br.title()
+        sentences_show += "_You might be interested in [{}]({})_ <br><br><br><br>".format(title, site)
+    
     if show == "Highlight text":
         texts = load_file(file)
         for t in texts:
@@ -192,9 +194,14 @@ def get_important_sentences(file, keywords, show, topn_word=200, show_all=False)
     return sentences_show
 
 
-def textAnalyzer(filename, outputFormat, keywords, showAll):
+def textAnalyzer(filename, outputFormat, keywords, showAll, showRecommendation):
     
-    text = get_important_sentences(filename, keywords, show = outputFormat, show_all = showAll)
+    text = get_important_sentences(filename, 
+                                   keywords, 
+                                   show = outputFormat, 
+                                   show_all = showAll, 
+                                   recommendLink = showRecommendation
+                                   )
     return text
 
 def saveAs(text):
@@ -211,25 +218,27 @@ st.title('LauzHack 2019, AXA')
 
 filename  = file_selector()
 
-outFormat = st.sidebar.selectbox('Select an output format:', OUTPUT_FORMAT)
-
-keywordList = st.sidebar.text_input('Keywords', ' ')
+keywordList = st.sidebar.text_input('2. Keywords (Optional)', ' ')
 keywordList = re.findall(r"[\w']+", keywordList)
 
-showAll = st.sidebar.checkbox( 'Show all', ('Show all results'))
-
-saveFile = st.sidebar.button('Save')
-
+st.sidebar.header('Original Text')
 st.sidebar.markdown(load_file(filename, show_origin=True))
+
+outFormat = st.selectbox('3. How to show the information:', OUTPUT_FORMAT)
+
+showAll   = st.checkbox( 'Show all', ('Show all results'))
+showRecommendLink   = st.checkbox( 'Show recommendation', ('Show recommendation'))
 
 # In[1]
 ## processing
-text = textAnalyzer(filename, outFormat, keywordList, showAll)
+text = textAnalyzer(filename, outFormat, keywordList, showAll, showRecommendLink)
 
 # In[2]
 ## output 
 st.header('Related information')
 st.markdown(text.replace('<br>', '\n'))
+
+saveFile = st.button('Save')
 
 if saveFile:
     if len(text) > 0:
@@ -237,6 +246,7 @@ if saveFile:
         st.write('File has been saved.')
     else:
         st.write('No text to save.')
+
         
 
     
